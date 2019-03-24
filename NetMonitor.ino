@@ -12,7 +12,7 @@ extern "C" {
 //#define STASSID "........"       <<--------  not used, WPS is enabled
 //#define STAPSK  "..........."    <<--------  not used as connection is via WPS
 
-char *iplist[] = {"192.168.2.30","192.168.2.254","fred",0};
+char *iplist[] = {"192.168.0.240","192.168.0.241","192.168.0.242","192.168.0.243","192.168.0.244","192.168.0.245","192.168.0.246","192.168.0.247","192.168.0.248","192.168.0.249",0};
 //======================================================================//
 
 
@@ -23,7 +23,7 @@ uint8_t resetstatus=0;
 uint8_t resetcounter;
 uint16_t lockout=0;
 
-#define MAX_IP 10
+#define MAX_IP 20
 
 const int relay1 = D5;
 const int relay2 = D6;
@@ -206,15 +206,6 @@ void loop() {
   return;
  }
  
-  int r = key_led(0);
-  if (r == true)
-   {
-    digitalWrite(relay2, true);
-    digitalWrite(relay1, true);
-   } else
-   digitalWrite(relay2, false);
-   digitalWrite(relay1, false);
-
   if(Ping.ping(WiFi.gatewayIP())){
      Serial.print("Gateway ");
      Serial.print(WiFi.gatewayIP());

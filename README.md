@@ -8,4 +8,6 @@ This helped me reboot my router if it decides to hang.
 
 20 IP addresses can be watched.
 
-https://github.com/RichardPar/ArduinoEsp8266_NetworkMonitor/blob/master/_20190324_150017.JPG
+![Image](https://github.com/RichardPar/ArduinoEsp8266_NetworkMonitor/blob/master/_20190324_150017.JPG)
+
+

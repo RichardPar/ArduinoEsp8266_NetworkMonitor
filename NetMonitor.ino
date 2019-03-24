@@ -25,6 +25,9 @@ uint16_t lockout=0;
 
 #define MAX_IP 20
 
+const int greenled = D9;
+const int redled = D8;
+const int whiteled = D7;
 const int relay1 = D5;
 const int relay2 = D6;
 const int button = 16;
@@ -141,13 +144,22 @@ void setup() {
   lockout=0;
   ipIndex=0;
   reset_iplist();
+
+  delay(1000);
+  Serial.begin(115200);
+  Serial.println("========= STARTUP =========");
+  Serial.println();
+
+  pinMode(greenled, OUTPUT);
+  pinMode(whiteled, OUTPUT);
+  pinMode(redled, OUTPUT);
   pinMode(relay1, OUTPUT);
   pinMode(relay2, OUTPUT);
   pinMode(button, INPUT);
   digitalWrite(relay1, true);
   digitalWrite(relay2, true);
+  digitalWrite(whiteled, false);
 
-  Serial.begin(115200);
   Serial.println();
   Serial.println();
   Serial.print("Connecting to ");
@@ -184,6 +196,8 @@ void setup() {
 void loop() {
 
 
+  int errorloop=0;
+
   if (resetstatus > 0)
   {
      yield();
@@ -197,12 +211,14 @@ void loop() {
 
      if (wifistatus == WL_CONNECTED)
       {  
+        digitalWrite(greenled, true);
         Serial.println("");
         Serial.println("WiFi connected");
         Serial.println("IP address: ");
         Serial.println(WiFi.localIP());
       } else
       {
+        digitalWrite(greenled, false);
         Serial.println("");
         Serial.println("WiFi disconnected");
       }
@@ -215,6 +231,10 @@ void loop() {
   return;
  }
  
+   digitalWrite(whiteled, true);
+   delay(100);
+   digitalWrite(whiteled, false);
+   
   if(Ping.ping(WiFi.gatewayIP())){
      Serial.print("Gateway ");
      Serial.print(WiFi.gatewayIP());
@@ -227,7 +247,6 @@ void loop() {
      yield();
      return;
   }
-
 
   if (lockout > 0)
    {
@@ -251,7 +270,7 @@ void loop() {
       if (statuslist[ipIndex].pingfail < 100)
          statuslist[ipIndex].pingfail++;
 
-      if ((statuslist[ipIndex].pingfail > 5) && (statuslist[ipIndex].offline == false))
+      if ((statuslist[ipIndex].pingfail > 4) && (statuslist[ipIndex].offline == false))
         {
           resetstatus=1;
           statuslist[ipIndex].offline = true;
@@ -261,4 +280,11 @@ void loop() {
     if (iplist[ipIndex] == 0)
       ipIndex=0; 
 
+    digitalWrite(redled,false); 
+    for (errorloop=0;errorloop < MAX_IP; errorloop++)
+      {
+        if (statuslist[errorloop].pingfail > 0)
+        digitalWrite(redled,true);
+        break;
+      }
 }

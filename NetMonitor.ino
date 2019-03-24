@@ -51,7 +51,7 @@ void reset_iplist(void)
   char a;
   for (a=0;a<MAX_IP;a++)
      {
-      statuslist[a].offline=true;
+      statuslist[a].offline=false;
       statuslist[a].pingfail=0;
      }
 }
@@ -82,6 +82,15 @@ void timerCallback(void *pArg) {
   
     if (resetstatus == 1)
     {
+
+      int a;
+      // Mark the other IP addresses as offline if they are all failing to respond
+      for (a=0;a<MAX_IP;a++)
+      {
+          if (statuslist[a].pingfail > 1)
+               statuslist[a].offline = true; 
+      }
+
       digitalWrite(relay2, false);
       digitalWrite(relay1, false);
       resetstatus=2;
@@ -228,14 +237,11 @@ void loop() {
    }
 
    
-   if(Ping.ping(iplist[ipIndex])){
-    statuslist[ipIndex].pingfail=0;
-    //if (statuslist[ipIndex].offline == false)
-    // {
-       Serial.print("IP ");
-       Serial.print(iplist[ipIndex]);
-       Serial.println(" online");
-     //}
+   if(Ping.ping(iplist[ipIndex],1)){
+      statuslist[ipIndex].pingfail=0;
+      Serial.print("IP ");
+      Serial.print(iplist[ipIndex]);
+      Serial.println(" online");
       statuslist[ipIndex].offline = false;
     } else 
     {
@@ -245,7 +251,7 @@ void loop() {
       if (statuslist[ipIndex].pingfail < 100)
          statuslist[ipIndex].pingfail++;
 
-      if ((statuslist[ipIndex].pingfail > 2) && (statuslist[ipIndex].offline == false))
+      if ((statuslist[ipIndex].pingfail > 5) && (statuslist[ipIndex].offline == false))
         {
           resetstatus=1;
           statuslist[ipIndex].offline = true;

@@ -83,6 +83,7 @@ void timerCallback(void *pArg) {
     if (resetstatus == 1)
     {
       digitalWrite(relay2, false);
+      digitalWrite(relay1, false);
       resetstatus=2;
       resetcounter=100;
     }
@@ -95,6 +96,7 @@ void timerCallback(void *pArg) {
       } else
       {
         digitalWrite(relay2, true);
+        digitalWrite(relay1, true);
         resetstatus=0;
         lockout=1000;
       }
@@ -208,8 +210,10 @@ void loop() {
   if (r == true)
    {
     digitalWrite(relay2, true);
+    digitalWrite(relay1, true);
    } else
    digitalWrite(relay2, false);
+   digitalWrite(relay1, false);
 
   if(Ping.ping(WiFi.gatewayIP())){
      Serial.print("Gateway ");

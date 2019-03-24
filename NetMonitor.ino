@@ -9,8 +9,8 @@ extern "C" {
 
 //======= Your Settings here .. Add IP addresses to watch MAX 10 =======//
 //======================================================================//
-#define STASSID "YourAPHere"
-#define STAPSK  "password here"
+//#define STASSID "........"       <<--------  not used, WPS is enabled
+//#define STAPSK  "..........."    <<--------  not used as connection is via WPS
 
 char *iplist[] = {"192.168.2.30","192.168.2.254","fred",0};
 //======================================================================//
@@ -42,8 +42,8 @@ struct iplist_t statuslist[MAX_IP];
 
 
 
-const char* ssid     = STASSID;
-const char* password = STAPSK;
+//const char* ssid     = STASSID;
+//const char* password = STAPSK;
 
 
 void reset_iplist(void)
@@ -107,9 +107,27 @@ void user_init(void) {
       os_timer_arm(&myTimer, 100, true);  
 }
 
+bool startWPSPBC() {
+// from https://gist.github.com/copa2/fcc718c6549721c210d614a325271389
+// wpstest.ino
+  Serial.println("WPS config start");
+  bool wpsSuccess = WiFi.beginWPSConfig();
+  if(wpsSuccess) {
+      // Well this means not always success :-/ in case of a timeout we have an empty ssid
+      String newSSID = WiFi.SSID();
+      if(newSSID.length() > 0) {
+        // WPSConfig has already connected in STA mode successfully to the new station. 
+        Serial.printf("WPS finished. Connected successfull to SSID '%s'\n", newSSID.c_str());
+      } else {
+        wpsSuccess = false;
+      }
+  }
+  return wpsSuccess; 
+}
+
 void setup() {
 
-
+  lockout=0;
   ipIndex=0;
   reset_iplist();
   pinMode(relay1, OUTPUT);
@@ -122,13 +140,31 @@ void setup() {
   Serial.println();
   Serial.println();
   Serial.print("Connecting to ");
-  Serial.println(ssid);
+  Serial.println(WiFi.SSID().c_str());
 
   /* Explicitly set the ESP8266 to be a WiFi-client, otherwise, it by default,
      would try to act as both a client and an access-point and could cause
      network-issues with your other WiFi-devices on your WiFi-network. */
   WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
+  WiFi.begin(WiFi.SSID().c_str(),WiFi.psk().c_str()); // reading data from EPROM, 
+  
+  int r = key_led(0);
+  if (r == false)
+   {
+      bool rc = startWPSPBC();
+
+      if (rc == true)
+        {
+         Serial.println("WPS Successful");
+         WiFi.begin(WiFi.SSID().c_str(),WiFi.psk().c_str()); // reading data from EPROM, 
+        } else 
+         Serial.println("WPS failed");
+   }
+  
+  while (WiFi.status() == WL_DISCONNECTED) {          // last saved credentials
+    delay(500);
+    Serial.print(".");
+  }
 
   user_init();
     
@@ -191,6 +227,7 @@ void loop() {
 
   if (lockout > 0)
    {
+      Serial.println("Locked out");
       yield();
       return;
    }
@@ -198,14 +235,13 @@ void loop() {
    
    if(Ping.ping(iplist[ipIndex])){
     statuslist[ipIndex].pingfail=0;
-    if (statuslist[ipIndex].offline == false)
-     {
+    //if (statuslist[ipIndex].offline == false)
+    // {
        Serial.print("IP ");
        Serial.print(iplist[ipIndex]);
        Serial.println(" online");
-     }
-    statuslist[ipIndex].offline = false;
-    delay(600);
+     //}
+      statuslist[ipIndex].offline = false;
     } else 
     {
       Serial.print("IP ");

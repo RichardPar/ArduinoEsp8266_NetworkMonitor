@@ -6,4 +6,4 @@ The code PINGS the list of IP addresses and when there are no responses from one
 
 This helped me reboot my router if it decides to hang. 
 
-10 IP addresses can be watched.
+20 IP addresses can be watched.

@@ -4,7 +4,7 @@ Arduino Esp8266 network supervisor - toggle a relay when an IP stops responding
 The code PINGS the list of IP addresses and when there are no responses from one, it will toggle a relay for 
 10 seconds. 
 
-This helped me reboot my router if it decides to hang. 
+This helped me reboot a device if it decides to hang. (Gateway must be online!) 
 
 20 IP addresses can be watched.
 
